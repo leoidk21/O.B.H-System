@@ -1,0 +1,167 @@
+.budget-content {
+    margin: 2rem;
+}
+
+.expenses-title {
+    margin-bottom: 1rem;
+}
+
+.coordinators-title {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.status {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.send-reminder {
+    color: #FFF;
+    background: linear-gradient(135deg, #007bff, #0056d2);
+}
+
+.send-reminder:hover {
+    opacity: 0.9;
+}
+
+.view-receipt {
+    color: #FFF;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.view-receipt:hover {
+    opacity: 0.9;
+}
+
+.status-reciept-pending {
+    color: #c2185b;
+    background: #fce4ec; 
+}
+
+.status-reciept-paid {
+    width: 60px;
+    color: #155724; 
+    text-align: center;
+    background-color: #d4edda; 
+}
+
+.modal-image {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: contain;
+}
+
+.payment-modal-container,
+.send-reminder-modal-container {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: none;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.6);
+}
+
+.payment-modal-content,
+.send-reminder-content {
+    min-width: 300px;
+    max-width: 600px;
+    border-radius: 8px;
+    padding: 7px 22px 15px 20px;
+    animation: fadeIn 0.3s ease-in-out;
+    background: linear-gradient(135deg, #fffefc, #f9f6f2);
+}
+
+.payment-modal-header,
+.send-reminder-modal-header {
+    display: flex;
+    position: relative;
+    align-items: center;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.payment-modal-header h3,
+.send-reminder-modal-header h3 {
+    color: #333;
+    font-size: 1.2rem;
+    font-family: "Noto Sans Georgian", sans-serif;
+}
+
+.close-modal {
+    color: #333;
+    font-size: 30px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.payment-modal-body {
+    gap: 10px;
+    display: flex;
+    margin-top: 15px;
+    flex-direction: column;
+}
+
+.send-reminder-modal-body {
+    display: flex;
+    margin-top: 10px;
+    align-items: center;
+    flex-direction: column;
+}
+
+.send-reminder-modal-body img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.send-reminder-modal-body h3 {
+    margin-top: 10px;
+}
+
+.payment-modal-footer,
+.send-reminder-modal-footer {
+    gap: 10px;
+    display: flex;
+    margin-top: 14px;
+    align-items: center;
+}
+
+.mark-paid,
+.close-send-reminder {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+}
+
+.decline-payment {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.mark-paid:hover,
+.decline-payment:hover {
+    opacity: 0.9;
+}
+
+.mark-paid,
+.decline-payment,
+.close-send-reminder {
+    width: 100%;
+    border: none;
+    color: #FFF;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    font-family: 'Poppins', sans-serif;
+}
