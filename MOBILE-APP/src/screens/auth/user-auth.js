@@ -65,8 +65,8 @@ export const isLoggedIn = async () => {
 
 // SIGNUP
 export const signup = async (firstName, lastName, email, password) => {
-    console.log('📡 user-auth.js: signUp called');
-    console.log('📡 Sending data:', { firstName, lastName, email });
+    console.log('user-auth.js: signUp called');
+    console.log('Sending data:', { firstName, lastName, email });
 
     try {
         const res = await axios.post(`${API_BASE}/signup`, {
@@ -76,41 +76,36 @@ export const signup = async (firstName, lastName, email, password) => {
             password
         });
 
-        console.log('✅ Signup response:', res.data);
+        console.log('Signup response:', res.data);
 
         if (res.data.token) await storeToken(res.data.token);
         if (res.data.user) await storeUserData(res.data.user);
 
         return res.data;
     } catch (error) {
-        // console.error('❌ Signup error:', error.message);
-        // console.error('❌ Error response:', error.response?.data);
         throw error.response ? error.response.data : { error: 'Server error' };
     }
 };
 
 // LOGIN
 export const login = async (email, password) => {
-    console.log('📡 user-auth.js: login called');
+    console.log('user-auth.js: login called');
 
     try {
         const res = await axios.post(`${API_BASE}/login`, { email, password });
-        console.log('✅ Login response:', res.data);
+        console.log('Login response:', res.data);
 
         if (res.data.token) await storeToken(res.data.token);
         if (res.data.user) await storeUserData(res.data.user);
 
         return res.data;
     } catch (error) {
-        // console.error('❌ Login error:', error.message);
-        // console.error('❌ Error response:', error.response?.data);
         throw error.response ? error.response.data : { error: 'Server error' };
     }
 };
 
 // This is a helper function for making API requests that require the user to be logged in. 
 // It automatically attaches the JWT token to every request.
-
 // Parameters:
 // endpoint - The API path (e.g., /mobile-users, /profile)
 // method - HTTP method: GET, POST, PUT, DELETE (defaults to GET)
