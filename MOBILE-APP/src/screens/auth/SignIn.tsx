@@ -106,7 +106,7 @@ const SignIn = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={handleForgotPassword}
+              onPress={() => navigation.navigate('ForgotPass')}
               disabled={loading}
             >
               <Text style={{ color: loading ? '#999' : '#000' }}>
@@ -270,4 +270,3 @@ const styles = StyleSheet.create({
 });
 
 export default SignIn;
-

@@ -114,6 +114,7 @@ export const makeAuthenticatedRequest = async (endpoint, method = 'GET', data = 
     try {
         const token = await getToken();
         if (!token) throw { error: 'Not authenticated' };
+        console.log('Token being sent:', token ? 'Token exists' : 'No token');
 
         const config = {
             method,
@@ -134,4 +135,44 @@ export const makeAuthenticatedRequest = async (endpoint, method = 'GET', data = 
         }
         throw error.response ? error.response.data : { error: 'Server error' };
     }
+};
+
+export const forgotPassword = async (email) => {
+    try {
+        const res = await axios.post(`${API_BASE}/forgot-password`, { email });
+        return res.data;
+    } catch (error) {
+        throw error.response ? error.response.data : { error: 'Server error' };
+    }
+}
+
+export const verifyCode = async (email, code) => {
+    try {
+        const res = await axios.post(`${API_BASE}/verify-code`, { email, code });
+        return res.data;
+    } catch (error) {
+        throw error.response ? error.response.data : { error: 'Server error' };
+    }
+} 
+
+export const resetPassword = async (email, code, newPassword) => {
+    try {
+        const res = await axios.post(`${API_BASE}/reset-password`, { 
+            email,
+            code,
+            newPassword
+        });
+        return res.data;
+    } catch (error) {
+        throw error.response ? error.response.data : { error: 'Server error' };
+    }
+}
+
+// update user profile
+export const updateProfile = async (firstName, lastName, email) => {
+    return makeAuthenticatedRequest('/update-profile', 'PUT', {
+        first_name: firstName,
+        last_name: lastName,
+        email
+    });
 };

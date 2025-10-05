@@ -8,15 +8,30 @@ import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { Alert } from 'react-native';
+
+import { forgotPassword } from '../auth/user-auth'; 
 
 const SignUp = () => {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
   const forgotText = "Enter the email address linked to your account and we'll send you a code to reset your password.";
-
   const navigation: NavigationProp<ParamListBase> = useNavigation();
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert("Missing email", "Please enter your email address.");
+      return;
+    }
+    try {
+      await forgotPassword(email);
+      Alert.alert("Success", "Verification code sent to your email.");
+      navigation.navigate('SendCode', { email });
+    } catch (error: any) {
+      const errorMessage = error?.error || 'Failed to send code';
+      Alert.alert("Error", errorMessage);
+      console.log(error);
+    }
+  }
 
   return (
     <SafeAreaProvider>
@@ -54,7 +69,7 @@ const SignUp = () => {
             />
             <TouchableOpacity 
                 style={styles.submitBtn}
-                onPress={() => navigation.navigate('SendCode')}
+                onPress={handleForgotPassword}
             >
                 <Text style={styles.submitText}>SEND</Text>
             </TouchableOpacity>

@@ -9,11 +9,51 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
+import { Alert } from 'react-native';
+import { useRoute, RouteProp } from '@react-navigation/native';
+
+import { resetPassword } from '../auth/user-auth';
+
 const ResetPass = () => {
+  // reset pass route
+  type ResetPassRouteProp = RouteProp<{ ResetPass: { email: string; code: string } }, 'ResetPass'>;
+
+  const navigation: NavigationProp<ParamListBase> = useNavigation();
+  const route = useRoute<ResetPassRouteProp>();
+  const { email, code } = route.params;
+
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const navigation: NavigationProp<ParamListBase> = useNavigation();
+  const handleResetPassword = async () => {
+    // Validation
+    if (!newPassword || !confirmPassword) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+
+    // Password validation
+    if (newPassword !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert("Error", "Password must be at least 6 characters.");
+      return;
+    }
+
+    try {
+      await resetPassword(email, code, newPassword);
+      Alert.alert("Success", "Password reset successfully!", [
+        { text: "OK", onPress: () => navigation.navigate('SignIn') }
+      ]);
+    } catch (error: any) {
+      console.error('Error resetting password:', error);
+      const errorMessage = error?.error || 'Failed to reset password';
+      Alert.alert("Error", errorMessage);
+    }
+  };
 
   return (
     <SafeAreaProvider>
@@ -45,19 +85,20 @@ const ResetPass = () => {
             <TextInput
               placeholder='New Password' 
               value={newPassword}
-              onChangeText={(password) => setNewPassword(password)}           
+              onChangeText={setNewPassword}
               style={styles.textInput}
               secureTextEntry={true}
             />
             <TextInput
               placeholder='Confirm Password' 
               value={confirmPassword}
-              onChangeText={(password) => setConfirmPassword(password)}           
+              onChangeText={setConfirmPassword}       
               style={styles.textInput}
               secureTextEntry={true}
             />
             <TouchableOpacity 
               style={styles.submitBtn}
+              onPress={handleResetPassword}
             >
               <Text style={styles.submitText}>RESET PASSWORD</Text>
             </TouchableOpacity>

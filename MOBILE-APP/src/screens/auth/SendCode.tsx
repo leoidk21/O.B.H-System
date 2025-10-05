@@ -8,10 +8,13 @@ import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { Alert } from 'react-native';
+import { useRoute, RouteProp } from '@react-navigation/native';
+
+import { verifyCode } from '../auth/user-auth';
 
 const SignUp = () => {
-
-  const [digits, setDigits] = useState(['', '', '', '', '']);
+  const [digits, setDigits] = useState(['', '', '', '']);
   const inputRefs = useRef(digits.map(() => createRef()));
 
   const handleDigitChange = (index: number, value: string) => {
@@ -25,8 +28,42 @@ const SignUp = () => {
     }
   };
 
-  const forgotText = "We’ve sent a code to your email address. Enter it below to verify.";
+  const forgotText = "We've sent a code to your email address. Enter it below to verify.";
   const navigation: NavigationProp<ParamListBase> = useNavigation();
+
+  // send code route
+  type SendCodeRouteProp = RouteProp<{ SendCode: { email: string } }, 'SendCode'>;
+  const route = useRoute<SendCodeRouteProp>();
+  const { email } = route.params;
+
+  const [loading, setLoading] = useState(false);
+
+  const handleVerifyCode = async () => {
+    const code = digits.join('');
+
+    if (code.length !== 4) {
+      Alert.alert("Error", "Please enter a 4-digit code.");
+      return;
+    }
+
+    if (!email) {
+      Alert.alert("Error", "Email is missing. Please go back and try again.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await verifyCode(email, code);
+      Alert.alert("Success", "Code verified successfully!");
+      navigation.navigate('ResetPass', { email, code });
+    } catch (error: any) {
+      console.log(error);
+      const errorMessage = error?.error || 'Invalid or expired code';
+      Alert.alert("Verification Failed", errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <SafeAreaProvider>
@@ -71,7 +108,8 @@ const SignUp = () => {
             </View>
             <TouchableOpacity 
                 style={styles.submitBtn}
-                onPress={() => navigation.navigate('ResetPass')}
+                onPress={handleVerifyCode}
+                disabled={loading}
             >
                 <Text style={styles.submitText}>VERIFY CODE</Text>
             </TouchableOpacity>

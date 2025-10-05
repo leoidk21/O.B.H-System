@@ -12,6 +12,7 @@
     "@fortawesome/fontawesome": "^1.1.8",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-native-fontawesome": "^0.3.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/checkbox": "^0.5.20",
     "@react-native-community/datetimepicker": "^8.4.4",
     "@react-native-masked-view/masked-view": "^0.3.2",
@@ -26,7 +27,10 @@
     "expo-font": "~14.0.8",
     "expo-linear-gradient": "^15.0.7",
     "expo-modules-core": "3.0.15",
+    "expo-secure-store": "~15.0.7",
     "expo-status-bar": "^3.0.8",
+    "google-auth-library": "^10.4.0",
+    "jsonwebtoken": "^9.0.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.4",
@@ -46,9 +50,7 @@
     "react-native-snap-carousel": "^1.6.1",
     "react-native-svg": "^15.12.1",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-worklets": "0.5.1",
-    "@react-native-async-storage/async-storage": "2.2.0",
-    "expo-secure-store": "~15.0.7"
+    "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

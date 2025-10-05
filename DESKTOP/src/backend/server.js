@@ -1,14 +1,16 @@
-// Load environment variables FIRST
 const dotenv = require('dotenv');
-dotenv.config();
-console.log("🔑 JWT_SECRET:", process.env.JWT_SECRET);
-
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+dotenv.config();
+console.log("🔑 JWT_SECRET:", process.env.JWT_SECRET);
+
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const googleAuth = require('./routes/auth-google');
 const pool = require('./db');
 
 const app = express();
@@ -38,6 +40,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 const superAdminRoutes = require('./routes/superAdmin');
 app.use('/api/superadmin', superAdminRoutes);
+app.use('/api/auth', googleAuth);
 
 const mobileUsers = require("./routes/mobile-users");
 app.use("/api", mobileUsers);

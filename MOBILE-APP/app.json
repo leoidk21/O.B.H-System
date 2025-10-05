@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.orchestratedbyhistory.eventplanner",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -29,6 +30,11 @@
       "expo-font",
       "expo-asset",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ad2cb415-12fc-442c-ad81-39f87fa59cf0"
+      }
+    }
   }
 }

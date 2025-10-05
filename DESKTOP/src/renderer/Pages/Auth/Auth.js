@@ -209,14 +209,13 @@
         } else {
           el.textContent = "Not provided";
         }
-      });
-
+    });
 
     const roleText = data.role.replace("_", " ").toUpperCase();
     document.querySelectorAll("#profile-role", ".role-text")
       .forEach(el => el.textContent = roleText);
 
-    console.log("✅ UI updated successfully!");
+    console.log("UI updated successfully!");
   }
 
   // Logout

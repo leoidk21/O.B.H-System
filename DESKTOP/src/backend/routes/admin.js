@@ -127,8 +127,6 @@ router.post('/qr-code', authenticateToken, requireAdmin, auditLog('QR Code', 'GE
   }
 });
 
-
-
 module.exports = router;
 
 /* Middleware: verify token
