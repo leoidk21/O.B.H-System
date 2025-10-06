@@ -15,7 +15,7 @@ const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 router.post('/google', async (req, res) => {
   const { idToken } = req.body;
   if (!idToken) return res.status(400).json({ error: 'Missing idToken' });
-
+ 
   try {
     // Verify the ID token
     const ticket = await client.verifyIdToken({

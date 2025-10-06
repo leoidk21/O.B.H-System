@@ -7,10 +7,54 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Alert } from 'react-native';
-
 import { login } from '../auth/user-auth';
 
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
+
+WebBrowser.maybeCompleteAuthSession();
+
 const SignIn = () => {
+  const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: '60526703767-6akaoq0t7q4revj50u4hpn5ivcborm9d.apps.googleusercontent.com',
+    androidClientId: '438266244663-ouhvt3rep9ngk6340rgesshdli6j6red.apps.googleusercontent.com',
+    redirectUri: AuthSession.makeRedirectUri({
+      useProxy: true,
+    }),
+    scopes: ['profile', 'email'],
+  });
+
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      fetch('https://www.googleapis.com/userinfo/v2/me', {
+        headers: { Authorization: `Bearer ${authentication.accessToken}` },
+      })
+        .then(res => res.json())
+        .then(user => {
+          Alert.alert('Login Successful', `Welcome ${user.name}`);
+        })
+        .catch(err => {
+          console.error('Error fetching user info:', err);
+        });
+    }
+  }, [response]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      console.log("🔐 Initiating Google Sign-In...");
+      const result = await promptAsync({ useProxy: true });
+      console.log("Result:", result);
+    } catch (error) {
+      console.error("❌ Error during sign in:", error);
+    }
+  };
+
+  // ======= HANDLE SIGN IN SECTION =======//
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -122,7 +166,11 @@ const SignIn = () => {
           </View>
 
           <View style={styles.continueContainer}>
-            <TouchableOpacity style={styles.googleBtn}>
+            <TouchableOpacity 
+              style={styles.googleBtn}
+              disabled={!request}
+              onPress={handleGoogleSignIn}
+            >
               <Image
                 source={require('../../assets/google.png')}
                 style={{
