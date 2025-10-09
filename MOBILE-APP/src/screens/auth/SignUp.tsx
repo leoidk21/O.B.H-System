@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, Image, Dimensions, TextInput , Button, TouchableOpacity} from 'react-native';
+import React, { useState, useRef } from 'react'
+import { StyleSheet, Text, View, Image, TextInput , TouchableOpacity, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, ScrollView} from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import colors from '../config/colors';
@@ -47,97 +47,133 @@ const SignUp = () => {
 
   const navigation: NavigationProp<ParamListBase> = useNavigation();
 
+  const firstNameRef = useRef<TextInput>(null);
+  const lastNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+
+  const [isFirstNameFocused, setIsFirstNameFocused] = useState(false);
+  const [isLastNameFocused, setIsLastNameFocused] = useState(false);
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
+  // Add this to dismiss keyboard when tapping outside
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
+  const dismissKeyboardAndBlur = () => {
+    emailRef.current?.blur();
+    passwordRef.current?.blur();
+    Keyboard.dismiss();
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1 }}>
-        <LinearGradient
-            colors={['#FFFFFF', '#f2e8e2ff']}
-            style={styles.container}
-        >
-          <View style={styles.centeredContent}> 
-            <Image 
-              source={require('../../assets/Logo.png')}
-              style={{
-                width: wp('50%'),
-                height: wp('50%'),
-              }} 
-              resizeMode='contain'
-            />
-            <Text style={[styles.topText, { fontSize: wp('5.5%') }]}>Create an account</Text>
-          </View>
-
-          <View style={styles.formContainer}>
-            <TextInput
-                placeholder="First Name"
-                value={firstName}
-                onChangeText={setFirstName}
-                style={styles.textInput}
-            />
-
-            <TextInput
-                placeholder="Last Name"
-                value={lastName}
-                onChangeText={setLastName}
-                style={styles.textInput}
-            />
-
-            <TextInput
-                placeholder='Email' 
-                value={email}
-                onChangeText={(text) => setEmail(text)}           
-                style={styles.textInput}
-            />
-
-            <TextInput
-                placeholder='Password' 
-                value={password}
-                onChangeText={(text) => setPassword(text)} 
-                style={styles.textInput}          
-            />
-
-            <TouchableOpacity 
-              style={styles.submitBtn}
-              onPress={handleSignUp}
+        <TouchableWithoutFeedback onPress={dismissKeyboardAndBlur}>
+          <View style={{ flex: 1 }}>
+            <KeyboardAvoidingView 
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={{ flex: 1 }}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
             >
-              <Text style={styles.submitText}>SIGN UP</Text>
-            </TouchableOpacity>
-          </View>
+              <LinearGradient
+                colors={['#FFFFFF', '#f2e8e2ff']}
+                style={styles.container}
+              >
+                <ScrollView 
+                  contentContainerStyle={styles.scrollContent}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={styles.centeredContent}> 
+                    <Image 
+                      source={require('../../assets/Logo.png')}
+                      style={{
+                        width: wp('58%'),
+                        height: wp('58%'),
+                      }} 
+                      resizeMode='contain'
+                    />
+                    <Text style={[styles.topText, { fontSize: wp('5.5%') }]}>Create an account</Text>
+                  </View>
 
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
-          </View>
+                  <View style={styles.formContainer}>
+                    <TextInput
+                      ref={firstNameRef}
+                      placeholder="First Name"
+                      value={firstName}
+                      onChangeText={setFirstName}
+                      style={[
+                        styles.textInput,
+                        isFirstNameFocused && styles.textInputFocused
+                      ]}
+                      onFocus={() => setIsFirstNameFocused(true)}
+                      onBlur={() => setIsFirstNameFocused(false)}
+                    />
 
-          <View style={styles.continueContainer}>
-            <TouchableOpacity style={styles.googleBtn}>
-              <Image
-                source={require('../../assets/google.png')}
-                style={{
-                  width: wp('6%'),
-                  height: wp('6%'),
-                }}
-                resizeMode='contain'
-              />
-              <Text style={styles.googleText}>Continue with Google</Text>
-            </TouchableOpacity>
-          </View>
+                    <TextInput
+                      ref={lastNameRef}
+                      placeholder="Last Name"
+                      value={lastName}
+                      onChangeText={setLastName}
+                      style={[
+                        styles.textInput,
+                        isLastNameFocused && styles.textInputFocused
+                      ]}
+                      onFocus={() => setIsLastNameFocused(true)}
+                      onBlur={() => setIsLastNameFocused(false)}
+                    />
 
-          <View style={styles.loginContainer}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('SignIn')}
-            >
-            <Text style={styles.loginText}>
-                Already have an account?{' '}
-                <Text 
-                  style={styles.loginLink}>
-                  Sign In
-                </Text>
-            </Text>
-            </TouchableOpacity>
+                    <TextInput
+                      ref={emailRef}
+                      placeholder='Email' 
+                      value={email}
+                      onChangeText={setEmail}           
+                      style={[
+                        styles.textInput,
+                        isEmailFocused && styles.textInputFocused
+                      ]}
+                      onFocus={() => setIsEmailFocused(true)}
+                      onBlur={() => setIsEmailFocused(false)}
+                    />
+
+                    <TextInput
+                      ref={passwordRef}
+                      placeholder='Password' 
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                      style={[
+                        styles.textInput,
+                        isPasswordFocused && styles.textInputFocused
+                      ]}
+                      onFocus={() => setIsPasswordFocused(true)}
+                      onBlur={() => setIsPasswordFocused(false)}        
+                    />
+                    
+                    <TouchableOpacity 
+                      style={styles.submitBtn}
+                      onPress={handleSignUp}
+                    >
+                      <Text style={styles.submitText}>SIGN UP</Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              </LinearGradient>
+              <View style={styles.loginContainer}>
+                <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+                  <Text style={styles.loginText}>
+                    Already have an account?{' '}
+                    <Text style={styles.loginLink}>Sign In</Text>
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
           </View>
-        </LinearGradient>
-      </SafeAreaView>
+        </TouchableWithoutFeedback>
+      </SafeAreaView> 
     </SafeAreaProvider>
   )
 }
@@ -145,6 +181,11 @@ const SignUp = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: hp('12%'),
   },
 
   centeredContent: {
@@ -161,102 +202,52 @@ const styles = StyleSheet.create({
   textInput: {
     borderWidth: 1,
     width: wp('80%'),
-    borderRadius: wp('50%'),
+    fontSize: wp('4%'),
+    borderRadius: wp('10%'),
     borderColor: colors.border,
-    backgroundColor: colors.white,
     paddingHorizontal: wp('5%'),
     paddingVertical: hp('1.6%'),
+    backgroundColor: colors.white,
+  },
+
+  textInputFocused: {
+    elevation: 5,
+    borderWidth: 2,
+    shadowRadius: 4,
+    shadowOpacity: 0.3,
+    shadowColor: colors.indicator,
+    borderColor: colors.facebookBtn,
+    shadowOffset: { width: 0, height: 0 },
   },
 
   submitBtn: {
     width: wp('80%'),
     borderRadius: wp('50%'),
-    backgroundColor: colors.button,
     paddingHorizontal: wp('5%'),
     paddingVertical: hp('1.6%'),
+    backgroundColor: colors.button,
   },
 
   submitText: {
     textAlign: 'center',
     color: colors.white,
-  },
-
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: hp('2%'),
-    marginHorizontal: wp('12%'), 
-  },
-
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#ccc',
-  },
-
-  dividerText: {
-    fontSize: 12,
-    marginHorizontal: wp('4.17%'),
-  },
-
-  continueContainer: {
-    gap: 14,
-    alignItems: 'center',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    marginTop: hp('3%'),
-  },
-
-  googleBtn: {
-    gap: 10,
-    width: wp('80%'),
-    alignItems: 'center',
-    flexDirection: 'row',
-    borderRadius: wp('50%'),
-    justifyContent: 'center',
-    paddingHorizontal: wp('5%'),
-    paddingVertical: hp('1.6%'),
-    backgroundColor: colors.white,
-  },  
-
-  facebookBtn: {
-    gap: 10,
-    width: wp('80%'),
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    borderRadius: wp('50%'),
-    paddingHorizontal: wp('5%'),
-    paddingVertical: hp('1.6%'),
-    backgroundColor: colors.facebookBtn,
-  },
-
-  googleText: {
-    textAlign: 'center',
-  },
-
-  topText: {
-    width: wp('100%'),
-    textAlign: 'center',
-  },
-
-  facebookText: {
-    textAlign: 'center',
-    color: colors.white,
+    fontSize: wp('3.5%'),
   },
 
   loginContainer: {
-    marginTop: hp('2%'),
+    bottom: hp('3%'),
+    width: wp('100%'),
+    position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  loginText: {},
-  
   loginLink: {
     fontWeight: 'bold',
   },
+
+  loginText: {},
+  topText: {},
 });
 
 export default SignUp;

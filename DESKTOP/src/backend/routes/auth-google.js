@@ -3,12 +3,18 @@ const express = require('express');
 const router = express.Router();
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
-const pool = require('../db'); // your existing PG pool instance
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const pool = require('../db');
+
+const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_ANDROID_CLIENT_ID = '60526703767-lfo43dadhj4s1caonlfaujrhku776fep.apps.googleusercontent.com';
 const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
 
-// create client
-const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+router.get('/google', (req, res) => {
+  res.json({ 
+    message: 'Google auth endpoint is working! Use POST to authenticate.',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // POST /api/auth/google
 // body: { idToken: "<google id_token>" }
@@ -17,19 +23,45 @@ router.post('/google', async (req, res) => {
   if (!idToken) return res.status(400).json({ error: 'Missing idToken' });
  
   try {
-    // Verify the ID token
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: GOOGLE_CLIENT_ID
-    });
+    // Try to verify with both client IDs (web and android)
+    let ticket;
+    let clientUsed = 'unknown';
+    
+    // First try web client
+    try {
+      const webClient = new OAuth2Client(GOOGLE_WEB_CLIENT_ID);
+      ticket = await webClient.verifyIdToken({
+        idToken,
+        audience: GOOGLE_WEB_CLIENT_ID
+      });
+      clientUsed = 'web';
+      console.log('✅ Token verified using WEB client');
+    } catch (webErr) {
+      // If web client fails, try Android client
+      console.log('⚠️ Web client verification failed, trying Android client...');
+      try {
+        const androidClient = new OAuth2Client(GOOGLE_ANDROID_CLIENT_ID);
+        ticket = await androidClient.verifyIdToken({
+          idToken,
+          audience: GOOGLE_ANDROID_CLIENT_ID
+        });
+        clientUsed = 'android';
+        console.log('✅ Token verified using ANDROID client');
+      } catch (androidErr) {
+        // Both failed
+        console.error('❌ Both web and android verification failed');
+        throw new Error('Token verification failed with both clients');
+      }
+    }
+    
     const payload = ticket.getPayload();
-    // payload contains: sub (user id), email, email_verified, name, given_name, family_name, picture, etc.
     const { sub: provider_id, email, given_name: first_name = '', family_name: last_name = '' } = payload;
+
+    console.log(`📧 User email: ${email}, Provider ID: ${provider_id}`);
 
     if (!email) return res.status(400).json({ error: 'Google account has no email' });
 
     // Look up user by provider_id OR email
-    // Prefer provider_id match (in case user signed up with local provider before)
     const findUserQuery = `
       SELECT * FROM mobile_users
       WHERE provider = 'google' AND provider_id = $1
@@ -40,6 +72,7 @@ router.post('/google', async (req, res) => {
     let user;
     if (rows.length > 0) {
       user = rows[0];
+      console.log(`✅ Existing user found: ${user.email}`);
     } else {
       // If there's no provider match, check if an account with same email exists
       const { rows: emailRows } = await pool.query(
@@ -48,8 +81,9 @@ router.post('/google', async (req, res) => {
       );
 
       if (emailRows.length > 0) {
-        // update existing local user to link google provider (optional — depends on your policy)
+        // update existing local user to link google provider
         user = emailRows[0];
+        console.log(`🔗 Linking existing user to Google: ${user.email}`);
         const updateQuery = `
           UPDATE mobile_users
           SET provider = 'google', provider_id = $1, first_name = $2, last_name = $3
@@ -60,6 +94,7 @@ router.post('/google', async (req, res) => {
         user = updated[0];
       } else {
         // create a new user
+        console.log(`➕ Creating new user: ${email}`);
         const insertQuery = `
           INSERT INTO mobile_users (first_name, last_name, email, phone, password, provider, provider_id)
           VALUES ($1,$2,$3,NULL,NULL,'google',$4)
@@ -74,6 +109,8 @@ router.post('/google', async (req, res) => {
     const tokenPayload = { id: user.id, email: user.email, role: user.role || 'user' };
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '7d' });
 
+    console.log(`🎉 Login successful for: ${user.email}`);
+
     res.json({
       ok: true,
       token,
@@ -86,7 +123,7 @@ router.post('/google', async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Google auth error', err);
+    console.error('❌ Google auth error:', err);
     res.status(401).json({ error: 'Invalid Google ID token' });
   }
 });

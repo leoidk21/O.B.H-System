@@ -4,9 +4,10 @@ const cors = require('cors');
 const path = require('path');
 
 dotenv.config({ path: path.join(__dirname, '.env') });
-
-dotenv.config();
 console.log("🔑 JWT_SECRET:", process.env.JWT_SECRET);
+
+console.log('✅ Loaded env from:', path.join(__dirname, '.env'));
+console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
 
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
