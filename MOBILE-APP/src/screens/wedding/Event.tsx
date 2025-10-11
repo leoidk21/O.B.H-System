@@ -11,7 +11,10 @@ import { useNavigation } from "@react-navigation/native";
 import NavigationSlider from './ReusableComponents/NavigationSlider';
 import MenuBar from "./ReusableComponents/MenuBar";
 
+import { useEvent } from "../../context/EventContext";
 const Event = () => {
+    const { eventData } = useEvent();
+
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
     return (
@@ -40,7 +43,9 @@ const Event = () => {
                                     style={styles.eventImage}
                                 />
                                 <View>
-                                    <Text style={styles.eventTitle}>WEDDING</Text>
+                                    <Text style={styles.eventTitle}>
+                                        {eventData.event_type}
+                                    </Text>
                                     <Text style={styles.eventDescription}>Make your wedding elegant with a well-organised event.</Text>
                                 </View>
                             </View>
@@ -54,7 +59,9 @@ const Event = () => {
                                         style={{ width: wp("5%"), height: hp("5%") }}
                                         resizeMode="contain"
                                     />
-                                    <Text style={[styles.eventDescription, styles.eventDescriptionText]}>Date: Not yet specified</Text>
+                                    <Text style={[styles.eventDescription, styles.eventDescriptionText]}>
+                                        Date: {eventData.event_date ? eventData.event_date : 'Not yet specified'}
+                                    </Text>
                                 </View>
                                 <View style={styles.eventDetails}>
                                     <Image
@@ -62,7 +69,9 @@ const Event = () => {
                                         style={{ width: wp("5%"), height: hp("5%") }}
                                         resizeMode="contain"
                                     />
-                                    <Text style={[styles.eventDescription, styles.eventDescriptionText]}>Time: Not yet specified</Text>
+                                    <Text style={[styles.eventDescription, styles.eventDescriptionText]}>
+                                        {eventData.event_time ? eventData.event_time : 'Not yet specified'}
+                                    </Text>
                                 </View>
                                 <View style={styles.eventDetails}>
                                     <Image
@@ -70,7 +79,9 @@ const Event = () => {
                                         style={{ width: wp("5%"), height: hp("5%") }}
                                         resizeMode="contain"
                                     />
-                                    <Text style={[styles.eventDescription, styles.eventDescriptionText]}>Venue: Not yet specified</Text>
+                                    <Text style={[styles.eventDescription, styles.eventDescriptionText]}>
+                                        Venue: {eventData.venue ? eventData.venue : 'Not yet specified'}
+                                    </Text>
                                 </View>
                             </View>
                         </View>

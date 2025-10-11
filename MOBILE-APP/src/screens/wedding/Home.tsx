@@ -26,6 +26,8 @@ import { VenueSvg } from "../icons/svg/VenueSvg";
 import { GallerySvg } from "../icons/svg/GallerySvg";
 import { AccountSvg } from "../icons/svg/AccountSvg";
 
+import { useEvent } from '../../context/EventContext';
+
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const ProgressBar = ({ progress }: { progress: number }) => {
@@ -77,6 +79,47 @@ const Home = () => {
       }));
    };
 
+   const { eventData, calculateCountdown } = useEvent();
+   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+   useEffect(() => {
+    if (eventData.event_date) {
+      const updateCountdown = () => {
+        const now = new Date().getTime();
+        const eventTime = new Date(eventData.event_date).getTime();
+        const difference = eventTime - now;
+
+        if (difference <= 0) {
+          setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+          return;
+        }
+
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        setCountdown({ days, hours, minutes, seconds });
+      };
+
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [eventData.event_date]);
+
+  // Format date for display
+  const formatEventDate = (dateString: string) => {
+    if (!dateString) return 'Date not set';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
    return (
       <SafeAreaProvider>
          <SafeAreaView style={{ flex: 1 }}>
@@ -106,23 +149,27 @@ const Home = () => {
                               style={styles.weddingImage}
                         />
                         <View style={styles.beforeImage} />
-                        <Text style={styles.overlayTextTop}>Partner & Partner</Text>
+                        
+                        <Text style={styles.overlayTextTop}>
+                           {eventData.client_name} & {eventData.partner_name}
+                        </Text>
+                        
                         <View style={styles.overlayTextBottom}>
-                              <Text style={styles.countdown}>12.</Text>
-                              <Text style={styles.countdown}>02.</Text>
-                              <Text style={styles.countdown}>19.</Text>
-                              <Text style={styles.countdown}>56</Text>
+                           <Text style={styles.countdown}>{countdown.days.toString().padStart(2, '0')}.</Text>
+                           <Text style={styles.countdown}>{countdown.hours.toString().padStart(2, '0')}.</Text>
+                           <Text style={styles.countdown}>{countdown.minutes.toString().padStart(2, '0')}.</Text>
+                           <Text style={styles.countdown}>{countdown.seconds.toString().padStart(2, '0')}</Text>
                         </View>
 
                         <View style={styles.overlayTextBottom2}>
-                              <Text style={styles.countdownText}>Days</Text>
-                              <Text style={styles.countdownText}>Hours</Text>
-                              <Text style={styles.countdownText}>Mins</Text>
-                              <Text style={styles.countdownText}>Secs</Text>
+                           <Text style={styles.countdownText}>Days</Text>
+                           <Text style={styles.countdownText}>Hours</Text>
+                           <Text style={styles.countdownText}>Mins</Text>
+                           <Text style={styles.countdownText}>Secs</Text>
                         </View>
 
                         <View style={styles.overlayTextBottom3}>
-                              <Text style={styles.countdownDate}>06/06/2025</Text>
+                           <Text style={styles.countdownDate}>{formatEventDate(eventData.event_date)}</Text>
                         </View>
                      </View>
                   </View>
@@ -157,11 +204,17 @@ const Home = () => {
                         />
                      </View> 
                      <View style={styles.weddingTypeContainer}>
-                        <Text style={[styles.weddingType, styles.weddingTypeText]}>Intimate Wedding</Text>  
-                        <Text style={styles.weddingType}>Partner & Partner</Text>    
+                        <Text style={[styles.weddingType, styles.weddingTypeText]}>
+                           {eventData.wedding_type}
+                        </Text>  
+                        <Text style={styles.weddingType}>
+                           {eventData.client_name} & {eventData.partner_name}
+                        </Text>
                      </View>
                      <View style={styles.eventDateContainer}>
-                        <Text style={styles.eventDate}>16/06/2025</Text>
+                        <Text style={styles.eventDate}>
+                           {formatEventDate(eventData.event_date)}
+                        </Text>
                      </View>
                   </View>
                   {/* EVENT TYPE & DATE */}

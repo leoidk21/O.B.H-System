@@ -14,7 +14,20 @@ import { Alert } from "react-native";
 import NavigationSlider from './ReusableComponents/NavigationSlider';
 import MenuBar from "./ReusableComponents/MenuBar";
 
+import { useEvent } from "../../context/EventContext";
+
 const Schedule = () => {
+    const { eventData } = useEvent();
+    
+    const formatEventDate = (dateString: string) => {
+    if (!dateString) return 'Date not set';
+    const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+        });
+    };
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
     const [modalVisible, setModalVisible] = React.useState(false);
@@ -211,7 +224,9 @@ const Schedule = () => {
 
                     <View>
                         <View style={styles.dateContainer}>
-                            <Text style={styles.dateText}>{new Date().toDateString()}</Text>
+                            <Text style={styles.dateText}>
+                                {formatEventDate(eventData.event_date)}
+                            </Text>
                         </View>
                     </View>
 

@@ -1,5 +1,5 @@
-import React, { useState,  } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, StatusBar, Alert, Button } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, StatusBar, Alert, Button, Modal } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
@@ -8,6 +8,8 @@ import { NavigationProp, ParamListBase, useFocusEffect } from "@react-navigation
 import { LinearGradient } from "expo-linear-gradient";
 import colors from "../config/colors";
 import CheckBox from "react-native-check-box";
+
+import { useEvent } from '../../context/EventContext';
 
 // import Collapsible from "react-native-collapsible";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
@@ -61,15 +63,44 @@ const policies: PolicyItem[] = [
 ];
 
 const CompanyPolicy = () => {
-
   const [accepted, setAccepted] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const { eventData, saveEventToBackend } = useEvent();
+  const navigation: NavigationProp<ParamListBase> = useNavigation();
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
+  // ... DATA COLLECTED FROM PREVIOUS SCREENS ... //
   const handleContinue = () => {
     if (!accepted) {
       Alert.alert("Please accept the Company Policy to proceed.");
       return;
     }
-    navigation.navigate("Home");
+
+    setShowReviewModal(true);
+
+    console.log('Final Review - All Event Data:');
+    console.log('Package:', eventData.selected_package);
+    console.log('Price:', eventData.event_price);
+    console.log('Guest Range:', eventData.guest_range);
+    console.log('Clients:', eventData.client_name, '&', eventData.partner_name);
+    console.log('Event Date:', eventData.event_date);
+    console.log('Formatted Date:', eventData.formatted_event_date);
+    console.log('Event Type:', eventData.event_type);
+    console.log('Wedding Type:', eventData.wedding_type);
+  };
+
+  const handleConfirmAndContinue = async () => {
+    try {
+      // Save to backend
+      await saveEventToBackend();
+      
+      // Close modal and navigate to Home
+      setShowReviewModal(false);
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error('Error saving event:', error);
+      Alert.alert('Error', 'Failed to save event. Please try again.');
+    }
   };
 
   useFocusEffect(
@@ -80,14 +111,11 @@ const CompanyPolicy = () => {
 
       // Reset StatusBar when CompanyPolicy screen goes out of focus
       return () => {
-        StatusBar.setBackgroundColor('transparent'); // or your default app background
-        StatusBar.setBarStyle('dark-content'); // default style
+        StatusBar.setBackgroundColor('transparent');
+        StatusBar.setBarStyle('dark-content');
       };
     }, [])
   );
-
-  const navigation: NavigationProp<ParamListBase> = useNavigation();
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const toggleSection = (index: number) => {
     setActiveIndex(activeIndex === index ? null : index);
@@ -146,13 +174,107 @@ const CompanyPolicy = () => {
               <Text>Please accept our Terms & Conditions</Text>
             </View>
             <TouchableOpacity
-              style={styles.continueBtn}
+              style={[styles.continueBtn, !accepted && styles.continueBtnDisabled]}
               onPress={handleContinue}
+              disabled={!accepted}
             >
               <Text style={styles.continue}>Continue</Text>    
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+                {/* Review Modal */}
+        <Modal
+          visible={showReviewModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowReviewModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>🎉 Ready for Part 2!</Text>
+                <Text style={styles.modalSubtitle}>Let's review your event details</Text>
+              </View>
+
+              <ScrollView style={styles.reviewContent}>
+                {/* Event Summary */}
+                <View style={styles.reviewSection}>
+                  <Text style={styles.reviewSectionTitle}>Event Summary</Text>
+                  
+                  <View style={styles.reviewItem}>
+                    <Text style={styles.reviewLabel}>Couple:</Text>
+                    <Text style={styles.reviewValue}>
+                      {eventData.client_name} & {eventData.partner_name}
+                    </Text>
+                  </View>
+
+                  <View style={styles.reviewItem}>
+                    <Text style={styles.reviewLabel}>Wedding Type:</Text>
+                    <Text style={styles.reviewValue}>{eventData.wedding_type}</Text>
+                  </View>
+
+                  <View style={styles.reviewItem}>
+                    <Text style={styles.reviewLabel}>Event Date:</Text>
+                    <Text style={styles.reviewValue}>
+                      {eventData.formatted_event_date || eventData.event_date}
+                    </Text>
+                  </View>
+
+                  <View style={styles.reviewItem}>
+                    <Text style={styles.reviewLabel}>Package:</Text>
+                    <Text style={styles.reviewValue}>
+                      {eventData.guest_range} - {eventData.event_price}
+                    </Text>
+                  </View>
+
+                  {eventData.selected_package?.coordinators && (
+                    <View style={styles.reviewItem}>
+                      <Text style={styles.reviewLabel}>Coordinators:</Text>
+                      <View style={styles.coordinatorsList}>
+                        {eventData.selected_package.coordinators.map((coordinator: string, index: number) => (
+                          <Text key={index} style={styles.coordinatorText}>• {coordinator}</Text>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                </View>
+
+                {/* Next Steps */}
+                <View style={styles.nextStepsSection}>
+                  <Text style={styles.nextStepsTitle}>What's Next? 🚀</Text>
+                  <Text style={styles.nextStepsText}>
+                    Get ready for Part 2! You'll now access advanced planning tools for:
+                  </Text>
+                  <View style={styles.nextStepsList}>
+                    <Text style={styles.nextStepsItem}>• Budget Management</Text>
+                    <Text style={styles.nextStepsItem}>• Guest List & RSVPs</Text>
+                    <Text style={styles.nextStepsItem}>• Venue Selection</Text>
+                    <Text style={styles.nextStepsItem}>• Payment Tracking</Text>
+                    <Text style={styles.nextStepsItem}>• And much more!</Text>
+                  </View>
+                </View>
+              </ScrollView>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalButtonSecondary}
+                  onPress={() => setShowReviewModal(false)}
+                >
+                  <Text style={styles.modalButtonSecondaryText}>Go Back</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.modalButtonPrimary}
+                  onPress={handleConfirmAndContinue}
+                >
+                  <Text style={styles.modalButtonPrimaryText}>Start Part 2! 🎯</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
       </LinearGradient>
     </SafeAreaView>
   );
@@ -162,6 +284,8 @@ const styles = StyleSheet.create({
     container: {
       flex: 1,
     },
+
+    continueBtnDisabled: {},
 
     backBtn: {
       gap: 5,
@@ -268,6 +392,147 @@ const styles = StyleSheet.create({
       fontSize: 15,
       color: colors.white,
       fontFamily: 'Poppins',
+    },
+
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContainer: {
+      backgroundColor: 'white',
+      borderRadius: 20,
+      padding: 25,
+      margin: 20,
+      maxHeight: '80%',
+      width: '90%',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    modalHeader: {
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    modalTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: '#19579C',
+      textAlign: 'center',
+    },
+    modalSubtitle: {
+      fontSize: 16,
+      color: '#666',
+      textAlign: 'center',
+      marginTop: 5,
+    },
+    reviewContent: {
+      maxHeight: 400,
+    },
+    reviewSection: {
+      backgroundColor: '#f8f9fa',
+      padding: 15,
+      borderRadius: 10,
+      marginBottom: 20,
+    },
+    reviewSectionTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#333',
+      marginBottom: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ddd',
+      paddingBottom: 5,
+    },
+    reviewItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 10,
+      flexWrap: 'wrap',
+    },
+    reviewLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: '#555',
+      flex: 1,
+    },
+    reviewValue: {
+      fontSize: 14,
+      color: '#19579C',
+      fontWeight: '500',
+      flex: 1,
+      textAlign: 'right',
+    },
+    coordinatorsList: {
+      marginTop: 5,
+    },
+    coordinatorText: {
+      fontSize: 12,
+      color: '#666',
+      marginBottom: 2,
+    },
+    nextStepsSection: {
+      backgroundColor: '#e8f4fd',
+      padding: 15,
+      borderRadius: 10,
+      borderLeftWidth: 4,
+      borderLeftColor: '#19579C',
+    },
+    nextStepsTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#19579C',
+      marginBottom: 10,
+    },
+    nextStepsText: {
+      fontSize: 14,
+      color: '#333',
+      marginBottom: 10,
+      lineHeight: 20,
+    },
+    nextStepsList: {
+      marginLeft: 10,
+    },
+    nextStepsItem: {
+      fontSize: 13,
+      color: '#555',
+      marginBottom: 5,
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 20,
+      gap: 10,
+    },
+    modalButtonSecondary: {
+      flex: 1,
+      padding: 15,
+      borderRadius: 10,
+      backgroundColor: '#f0f0f0',
+      alignItems: 'center',
+    },
+    modalButtonSecondaryText: {
+      color: '#666',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    modalButtonPrimary: {
+      flex: 1,
+      padding: 15,
+      borderRadius: 10,
+      backgroundColor: '#19579C',
+      alignItems: 'center',
+    },
+    modalButtonPrimaryText: {
+      color: '#ffffff',
+      fontSize: 16,
+      fontWeight: 'bold',
     },
 });
 

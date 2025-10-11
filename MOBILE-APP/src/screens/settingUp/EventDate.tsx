@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
@@ -13,6 +13,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
+import { Alert } from "react-native";
+
+import { useEvent } from '../../context/EventContext';
+
 const ClientsName = () => {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
@@ -20,6 +24,46 @@ const ClientsName = () => {
   
   const [selectedDate, setSelectedDate] = useState("");
   const [formattedDate, setFormattedDate] = useState(""); 
+
+  const { updateEvent, eventData } = useEvent();
+  
+  // useEffect(() => {
+  //   console.log(`Event Type: ${eventData.event_type}`);
+  //   console.log(`Wedding Type: ${eventData.wedding_type}`);
+  //   console.log('EventDate - Event Data:', eventData);
+  //   console.log('Selected Package Price:', eventData.event_price);
+  //   console.log('Full Selected Package:', eventData.selected_package);
+  //   console.log('Guest Range:', eventData.guest_range);
+  //   console.log('Client Names:', eventData.client_name, '&', eventData.partner_name);
+  // }, []);
+
+  const handleDateSelect = (rawDate: string) => {
+    setSelectedDate(rawDate);
+
+    const date = new Date(rawDate);
+    const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getDay()];
+    const monthName = ["January", "February", "March", "April", "May", "June",
+                      "July", "August", "September", "October", "November", "December"][date.getMonth()];
+
+    const formatted = `${dayName}, ${date.getDate()} ${monthName}`;
+    setFormattedDate(formatted);
+
+    // Save to EventContext
+    updateEvent('event_date', rawDate);
+    updateEvent('formatted_event_date', formatted);
+
+    console.log('Date selected:', rawDate);
+    console.log('Formatted date:', formatted);
+  };
+
+  const handleCreateEvent = () => {
+    if (!selectedDate) {
+      Alert.alert('Please select an event date');
+      return;
+    }
+    // Navigate to CompanyPolicy
+    navigation.navigate("CompanyPolicy");
+  };
 
   return (
     <SafeAreaProvider>
@@ -77,36 +121,18 @@ const ClientsName = () => {
 
           <Calendar
             onDayPress={(day) => {
-              const rawDate = day.dateString;
-              setSelectedDate(rawDate); // Save raw ISO date string
-
-              const date = new Date(rawDate);
-              const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getDay()];
-              const monthName = ["January", "February", "March", "April", "May", "June",
-                                "July", "August", "September", "October", "November", "December"][date.getMonth()];
-
-              const formatted = `${dayName}, ${date.getDate()}, ${monthName}`;
-              setFormattedDate(formatted); // Save formatted string for display
+              handleDateSelect(day.dateString);
             }}
 
             dayComponent={({ date, state }) => {
-              const isSelected = date?.dateString === selectedDate; // ✅ Compare raw strings
+              const isSelected = date?.dateString === selectedDate;
               const isToday = date?.dateString === new Date().toISOString().split("T")[0];
 
               return (
                 <TouchableOpacity
                   onPress={() => {
                     if (date && state !== "disabled") {
-                      // Trigger onDayPress manually
-                      const rawDate = date.dateString;
-                      setSelectedDate(rawDate);
-
-                      const d = new Date(rawDate);
-                      const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d.getDay()];
-                      const monthName = ["January", "February", "March", "April", "May", "June",
-                                        "July", "August", "September", "October", "November", "December"][d.getMonth()];
-                      const formatted = `${dayName}, ${d.getDate()} ${monthName}`;
-                      setFormattedDate(formatted);
+                      handleDateSelect(date.dateString);
                     }
                   }}
                   activeOpacity={1}
@@ -146,50 +172,54 @@ const ClientsName = () => {
               );
             }}
 
-              renderArrow={(direction) => (
-                <Icon
-                  name={direction === "left" ? "chevron-left" : "chevron-right"}
-                  size={24}
-                  color="#102E50"
-                />
-              )}
-              theme={{
-                textMonthFontSize: 16,
-                arrowColor: "#102E50",
-                textDayHeaderFontSize: 14,
-                dayTextColor: "#102E50",
-                textMonthFontWeight: "bold",
-                monthTextColor: "#102E50",
-                todayTextColor: colors.white,
-                backgroundColor: colors.white,
-                textDisabledColor: "#d9e1e8",
-                calendarBackground: colors.white,
-                todayBackgroundColor: "#BA4557",
-                selectedDayTextColor: colors.white,
-                textSectionTitleColor: "#102E50",
-                selectedDayBackgroundColor: "#2A65DD",
-              }}
-              style={{
-                elevation: 3,
-                width: wp("88%"),
-                borderRadius: 10,
-                paddingBottom: 10,
-                alignSelf: "center",
-                backgroundColor: "#fff",
-              }}
-              enableSwipeMonths={true}
-            />
+            renderArrow={(direction) => (
+              <Icon
+                name={direction === "left" ? "chevron-left" : "chevron-right"}
+                size={24}
+                color="#102E50"
+              />
+            )}
+            theme={{
+              textMonthFontSize: 16,
+              arrowColor: "#102E50",
+              textDayHeaderFontSize: 14,
+              dayTextColor: "#102E50",
+              textMonthFontWeight: "bold",
+              monthTextColor: "#102E50",
+              todayTextColor: "#ffffff",
+              backgroundColor: "#ffffff",
+              textDisabledColor: "#d9e1e8",
+              calendarBackground: "#ffffff",
+              todayBackgroundColor: "#BA4557",
+              selectedDayTextColor: "#ffffff",
+              textSectionTitleColor: "#102E50",
+              selectedDayBackgroundColor: "#2A65DD",
+            }}
+            style={{
+              elevation: 3,
+              width: wp("88%"),
+              borderRadius: 10,
+              paddingBottom: 10,
+              alignSelf: "center",
+              backgroundColor: "#fff",
+            }}
+            enableSwipeMonths={true}
+          />
 
             <View style={styles.bottomContent}>
-              <TouchableOpacity
-                style={styles.createButton}
-                onPress={() => navigation.navigate("CompanyPolicy")}
-              >
-                <Text style={styles.buttonText}>
-                  Create Event
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={[
+                styles.createButton,
+                !selectedDate && styles.createButtonDisabled
+              ]}
+              onPress={handleCreateEvent}
+              disabled={!selectedDate}
+            >
+              <Text style={styles.buttonText}>
+                Create Event
+              </Text>
+            </TouchableOpacity>
+          </View>
         </LinearGradient>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -197,6 +227,7 @@ const ClientsName = () => {
 };
 
 const styles = StyleSheet.create({
+  createButtonDisabled: {},
   container: {
     flex: 1,
   },

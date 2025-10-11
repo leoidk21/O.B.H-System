@@ -1,4 +1,5 @@
 import React from "react";
+import { useEvent } from '../../context/EventContext';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Modal} from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
@@ -10,12 +11,16 @@ import colors from "../config/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const ChooseEvent = () => {
+  const { updateEvent } = useEvent();
   const navigation: NavigationProp<ParamListBase> = useNavigation();
   const [modalVisible, setModalVisible] = React.useState(false);
 
-  const handleOptionPress = (screen: string) => {
+  const handleOptionPress = (selectedWeddingType: string) => {
+    updateEvent('event_type', 'Wedding');
+    updateEvent('wedding_type', selectedWeddingType);
+    
     setModalVisible(false);
-    setTimeout(() => navigation.navigate(screen), 100);
+    setTimeout(() => navigation.navigate('EventPrice'), 100);
   };
 
   return (
@@ -52,7 +57,7 @@ const ChooseEvent = () => {
               >
                 <TouchableOpacity
                   style={styles.btnLink}
-                  onPress={() => handleOptionPress("EventPrice")}
+                  onPress={() => handleOptionPress("Grand Wedding")}
                 >
                   <Text style={styles.btnText}>Grand Wedding</Text>
                 </TouchableOpacity>
@@ -66,7 +71,7 @@ const ChooseEvent = () => {
               >
                 <TouchableOpacity
                   style={styles.btnLink}
-                  onPress={() => handleOptionPress("ClientsName")}
+                  onPress={() => handleOptionPress("Intimate Wedding")}
                 >
                   <Text style={styles.btnText}>Intimate Wedding</Text>
                 </TouchableOpacity>
@@ -80,7 +85,7 @@ const ChooseEvent = () => {
               >
                 <TouchableOpacity
                   style={styles.btnLink}
-                  onPress={() => handleOptionPress("ClientsName")}
+                  onPress={() => handleOptionPress("Civil Wedding")}
                 >
                   <Text style={styles.btnText}>Civil Wedding</Text>
                 </TouchableOpacity>

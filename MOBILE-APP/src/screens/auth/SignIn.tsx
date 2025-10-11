@@ -150,11 +150,11 @@ const SignIn = () => {
     setLoading(true); 
     
     try {
-      console.log('Attempting login...');
+      // console.log('Attempting login...');
       const data = await login(email, password);
       const { token, user } = data;
 
-      console.log('Login successful:', user);
+      // console.log('Login successful:', user);
       
       Alert.alert("Success", `Welcome back, ${user.email}!`);
         navigation.navigate("ChooseEvent"); 
@@ -206,11 +206,9 @@ const SignIn = () => {
                 isEmailFocused && styles.textInputFocused
               ]}
               onFocus={() => {
-                console.log('Email focused');
                 setIsEmailFocused(true);
               }}
               onBlur={() => {
-                console.log('Email blurred');
                 setIsEmailFocused(false);
               }}
             />
@@ -228,11 +226,9 @@ const SignIn = () => {
                 isPasswordFocused && styles.textInputFocused
               ]}
               onFocus={() => {
-                console.log('Password focused');
                 setIsPasswordFocused(true);
               }}
               onBlur={() => {
-                console.log('Password blurred');
                 setIsPasswordFocused(false);
               }}
             />

@@ -14,9 +14,13 @@ const adminRoutes = require('./routes/admin');
 const googleAuth = require('./routes/auth-google');
 const pool = require('./db');
 
+// Import routes
+const eventPlanRoutes = require('./routes/event-plan');
+const eventAuthRoutes = require('./routes/event-auth');
+
 const app = express();
 
-// Request logger (MUST be before routes to log API calls)
+// Request logger
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   if (req.body && Object.keys(req.body).length > 0) {
@@ -32,7 +36,6 @@ app.use(express.json());
 // Debug middleware for API routes
 app.use('/api', (req, res, next) => {
   console.log(`API Request: ${req.method} ${req.originalUrl}`);
-  console.log("Headers:", req.headers);
   next();
 });
 
@@ -46,12 +49,16 @@ app.use('/api/auth', googleAuth);
 const mobileUsers = require("./routes/mobile-users");
 app.use("/api", mobileUsers);
 
+// Event routes - FIXED: Don't use the same base path for both
+app.use('/api/event-plan', eventPlanRoutes); // Public event routes
+app.use('/api/admin/event-plan', eventAuthRoutes); // Admin event routes
+
 // Test endpoint
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Serve static files (must be last)
+// Serve static files
 app.use(express.static(path.join(__dirname, '../')));
 
 // Start server

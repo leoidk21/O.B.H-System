@@ -4,89 +4,30 @@ import { Guest, CurrentGuest, StatusType } from '../../type';
 export const useGuestManagement = () => {
   const [currentGuest, setCurrentGuest] = useState<CurrentGuest>({
     name: '',
-    side: '',
-    relationship: '',
-    ageGroup: '',
-    gender: '',
     status: '',
+    side: '', // Keep but don't use
   });
 
-  // Inside useGuestManagement
   const resetCurrentGuest = () => {
     setCurrentGuest({
       name: '',
-      side: '',
-      relationship: '',
-      ageGroup: '',
-      gender: '',
       status: '',
+      side: '',
     });
   };
 
   const [invitedGuests, setInvitedGuests] = useState<Guest[]>([]);
 
-  // Check if guest has complete information
-  const isGuestComplete = (guest: Guest): boolean => {
-    return (
-      guest.name.trim() !== '' &&
-      guest.side !== '' &&
-      guest.relationship !== '' &&
-      guest.side !== '' &&
-      guest.status !== '' &&
-      guest.status !== 'Pending'
-    );
-  };
-
-  // Get completion level (0 to 1)
-  const getGuestCompletionLevel  = (guest: Guest): number => {
-    let completeFields = 0;
-    const totalFields = 4;
-
-    if (guest.name.trim() !== '') completeFields++;
-    if (guest.side !== '') completeFields++;
-    if (guest.relationship !== '') completeFields++;  
-    if (guest.status !== '') completeFields++;
-
-    return completeFields / totalFields;
-  };
-
-  // Save side and relationship choices
-  const saveSideRelationship = (
-    checked: string,
-    selectedRelationship: number,
-    selectedAge: number,
-    selectedValue: string,
-    sideOptions: Array<{ value: string; label: string }>
-  ) => {
-    const selectedSide = sideOptions.find(option => option.value === checked)?.label || '';
-    const relationshipOptions = ["Family", "Friend", "Colleague", "VIP / Sponsor", "Other"];
-    const ageOptions = ["Adult", "Teen", "Child"];
-    
-    const selectedRelationshipText = relationshipOptions[selectedRelationship] || '';
-    const selectedAgeText = ageOptions[selectedAge] || '';
-    
-    setCurrentGuest({
-      ...currentGuest,
-      side: selectedSide,
-      relationship: selectedRelationshipText,
-      ageGroup: selectedAgeText,
-      gender: selectedValue
-    });
-    
-    return { selectedSide, selectedRelationship: selectedRelationshipText, selectedAge: selectedAgeText };
-  };
-
   // Save RSVP status
-  const saveRSVPStatus = (selectedRSVP: number) => {
-    const statusOptions: StatusType[] = ["Accepted", "Declined", "Pending"];
-    const selectedStatus = statusOptions[selectedRSVP] || 'Pending';
+  const saveRSVPStatus = (rsvpIndex: number) => {
+    // If no selection (-1), default to "Pending" (index 2)
+    const finalIndex = rsvpIndex === -1 ? 2 : rsvpIndex;
+    const status = ["Accepted", "Decline", "Pending"][finalIndex];
     
-    setCurrentGuest({
-      ...currentGuest,
-      status: selectedStatus
-    });
-    
-    return selectedStatus;
+    setCurrentGuest(prev => ({
+      ...prev,
+      status: status
+    }));
   };
 
   // Add guest to the list
@@ -95,12 +36,8 @@ export const useGuestManagement = () => {
       const newGuest: Guest = {
         id: Date.now().toString(),
         name: currentGuest.name,
-        side: currentGuest.side,
-        relationship: currentGuest.relationship,
-        ageGroup: currentGuest.ageGroup,
-        gender: currentGuest.gender,
-        status: currentGuest.status,
-        role: `${currentGuest.side} • ${currentGuest.relationship}`
+        status: currentGuest.status || 'Pending',
+        inviteLink: '',
       };
       
       setInvitedGuests(prevGuests => [...prevGuests, newGuest]);
@@ -108,11 +45,8 @@ export const useGuestManagement = () => {
       // Reset current guest
       setCurrentGuest({
         name: '',
+        status: 'Pending',
         side: '',
-        relationship: '',
-        ageGroup: '',
-        gender: '',
-        status: 'Pending'
       });
       
       return newGuest;
@@ -135,20 +69,6 @@ export const useGuestManagement = () => {
     return statusColors[status] || '#666';
   };
 
-  // Remove guest from list
-  const removeGuest = (guestId: string) => {
-    setInvitedGuests(prevGuests => prevGuests.filter(guest => guest.id !== guestId));
-  };
-
-  // Update guest status
-  const updateGuestStatus = (guestId: string, newStatus: StatusType) => {
-    setInvitedGuests(prevGuests =>
-      prevGuests.map(guest =>
-        guest.id === guestId ? { ...guest, status: newStatus } : guest
-      )
-    );
-  };
-
   // search state
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredGuests, setFilteredGuests] = useState<Guest[]>([]);
@@ -160,10 +80,7 @@ export const useGuestManagement = () => {
     } else {
       const filtered = invitedGuests.filter(guest =>
         guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        guest.side.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        guest.relationship.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        guest.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        guest.role.toLowerCase().includes(searchQuery.toLowerCase())
+        guest.status.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredGuests(filtered);
     }
@@ -172,17 +89,10 @@ export const useGuestManagement = () => {
   return {
     currentGuest,
     invitedGuests,
-    setInvitedGuests,
-    isGuestComplete,
-    getGuestCompletionLevel,
-    saveSideRelationship,
     saveRSVPStatus,
     addGuest,
     updateGuestName,
     getStatusColor,
-    removeGuest,
-    updateGuestStatus,
-    setCurrentGuest,
     resetCurrentGuest,
   };
 };

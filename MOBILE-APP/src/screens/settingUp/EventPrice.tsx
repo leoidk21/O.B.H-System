@@ -9,9 +9,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import colors from "../config/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
-const EventPrice = () => {
-  const navigation: NavigationProp<ParamListBase> = useNavigation();
+import { useEvent } from '../../context/EventContext';
 
+const EventPrice = () => {
+  const { updateEvent, eventData } = useEvent();
+
+  const navigation: NavigationProp<ParamListBase> = useNavigation();
   const packages = [
     {
     pax: "50-90",
@@ -72,6 +75,13 @@ const EventPrice = () => {
     },
   ];
 
+  const handlePackageSelect = (selectedPackage: any) => {
+    updateEvent('selected_package', selectedPackage);
+    updateEvent('package_price', selectedPackage.price);
+    updateEvent('guest_range', selectedPackage.pax);
+    navigation.navigate('ClientsName');
+  };
+
   return (
     <SafeAreaProvider>
       <>
@@ -124,7 +134,7 @@ const EventPrice = () => {
                         {packages.map((pkg, index) => (
                             <Pressable
                                 key={index}
-                                onPress={() => navigation.navigate("ClientsName")}
+                                onPress={() => handlePackageSelect(pkg)}
                             >
                                 <View key={index} style={styles.card}>
                                     <LinearGradient

@@ -10,10 +10,28 @@ import { NavigationProp, ParamListBase } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import colors from "../config/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { Alert } from "react-native";
+
+import { useEvent } from '../../context/EventContext';
 
 const ClientsName = () => {
-  const [name, setName] = useState('');
   const navigation: NavigationProp<ParamListBase> = useNavigation();
+
+  const { updateEvent, eventData } = useEvent();
+  const [myName, setMyName] = useState('');
+  const [partnerName, setPartnerName] = useState('');
+
+  const handleContinue = () => {
+    if (myName.trim() && partnerName.trim()){
+
+      updateEvent('client_name', myName.trim());
+      updateEvent('partner_name', partnerName.trim());  
+      updateEvent('full_client_name', `${myName.trim()} & ${partnerName.trim()}`);
+      navigation.navigate("EventDate");
+    } else {
+      Alert.alert('Please enter both names to continue.');
+    }
+  };
 
   return (
     <SafeAreaProvider>
@@ -68,8 +86,8 @@ const ClientsName = () => {
 
             <View>
               {/* your name */}
-              <View style={{ alignItems: "center", flexDirection: "row", gap: 15, marginTop: hp("5%"), marginLeft: wp("10%") }}>
-                <View style={{ backgroundColor: "#E0F2FE", borderRadius: 50, padding: 10, alignItems: "center" }}>
+              <View style={styles.myName}>
+                <View style={styles.myNameIcon}>
                   <FontAwesomeIcon
                     icon={faUser}
                     size={16}
@@ -77,20 +95,21 @@ const ClientsName = () => {
                     style={styles.faUser}
                   />
                 </View>
-                <Text style={{ fontSize: wp("4.2%"), width: wp("100%") }}>What's your name</Text>
+                <Text style={styles.myNameText}>What's your name</Text>
               </View>
 
-              <View style={{ alignItems: "center", justifyContent: "center" }}>
+              <View style={styles.enterName}>
                 <TextInput
                   style={styles.textInput}
                   placeholder="Enter your first name"
-                  onChangeText={(text) => setName(text)}
+                  value={myName}
+                  onChangeText={(text) => setMyName(text)}
                 />
               </View>
 
               {/* partner's name */}
-              <View style={{ alignItems: "center", flexDirection: "row", gap: 15, marginTop: hp("2%"), marginLeft: wp("10%")}}>
-                <View style={{ backgroundColor: "#E0F2FE", borderRadius: 50, padding: 10, alignItems: "center" }}>
+              <View style={styles.partnerName}>
+                <View style={styles.myNameIcon}>
                   <FontAwesomeIcon
                     icon={faHeart}
                     size={16}
@@ -98,30 +117,35 @@ const ClientsName = () => {
                     style={styles.faUser}
                   />
                 </View>
-                <Text style={{ fontSize: wp("4.2%"), width: wp("100%") }}>
+                <Text style={styles.myNameText}>
                   Your partner's name?
                 </Text>
               </View>
 
-              <View style={{ alignItems: "center", justifyContent: "center" }}>
+              <View style={styles.enterName}>
                 <TextInput
                   style={styles.textInput}
                   placeholder="Enter your first name"
-                  onChangeText={(text) => setName(text)}
+                  value={partnerName}
+                  onChangeText={(text) => setPartnerName(text)}
                 />
               </View>
             </View>
 
-          <View style={styles.bottomContent}>
-            <TouchableOpacity
-              style={styles.continueButton}
-              onPress={() => navigation.navigate("EventDate")}
-            >
-              <Text style={styles.continueButtonText}>
-                Continue
-              </Text>
-            </TouchableOpacity>
-          </View> 
+            <View style={styles.bottomContent}>
+              <TouchableOpacity
+                style={[
+                  styles.continueButton,
+                  (!myName.trim() || !partnerName.trim()) && styles.continueButtonDisabled
+                ]}
+                onPress={handleContinue}
+                disabled={!myName.trim() || !partnerName.trim()}
+              >
+                <Text style={styles.continueButtonText}>
+                  Continue
+                </Text>
+              </TouchableOpacity>
+            </View> 
 
           </LinearGradient>
         </SafeAreaView>
@@ -204,6 +228,41 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: 'Poppins',
   },
+
+  myName: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 15,
+    marginTop: hp("5%"),
+    marginLeft: wp("10%"),
+  },
+
+  partnerName: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 15,
+    marginTop: hp("2%"),
+    marginLeft: wp("10%"),
+  },
+
+  myNameIcon: {
+    backgroundColor: "#E0F2FE",
+    borderRadius: 50,
+    padding: 10,
+    alignItems: "center",
+  },
+
+  myNameText: {
+    fontSize: wp("4.2%"),
+    width: wp("100%"),
+  },
+
+  enterName: {
+      alignItems: "center",
+      justifyContent: "center",
+  },
+
+  continueButtonDisabled: {},
 
 });
 

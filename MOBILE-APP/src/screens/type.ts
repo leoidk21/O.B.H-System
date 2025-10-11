@@ -62,12 +62,8 @@ export type MenuItemType = {
 export interface Guest {
   id: string;
   name: string;
-  side: string;
-  relationship: string;
-  ageGroup: string;
-  gender: string;
   status: string;
-  role: string;
+  inviteLink: string;
 }
 
 export interface CurrentGuest {

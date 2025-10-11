@@ -61,8 +61,7 @@ export const isLoggedIn = async () => {
     return token !== null;
 };
 
-// ---------------- AUTH CALLS ----------------
-
+// ---------------- AUTH CALLS ---------------- //
 // SIGNUP
 export const signup = async (firstName, lastName, email, password) => {
     console.log('user-auth.js: signUp called');
@@ -89,11 +88,11 @@ export const signup = async (firstName, lastName, email, password) => {
 
 // LOGIN
 export const login = async (email, password) => {
-    console.log('user-auth.js: login called');
+    // console.log('user-auth.js: login called');
 
     try {
         const res = await axios.post(`${API_BASE}/login`, { email, password });
-        console.log('Login response:', res.data);
+        // console.log('Login response:', res.data);
 
         if (res.data.token) await storeToken(res.data.token);
         if (res.data.user) await storeUserData(res.data.user);
